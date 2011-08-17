@@ -44,7 +44,6 @@ class App(object):
         return self._api
 
     def load_user(self, account):
-        import pdb;pdb.set_trace()
         try:
             a_key = self.config[account]['key']
             a_secret = self.config[account]['secret']
@@ -65,9 +64,11 @@ class App(object):
             print "Authorization error, check that your app's key and secret are valid"
             sys.exit(1)
 
-    def get_list_timeline(self, listname, since_id):
+    def get_list_timeline(self, listname, since_id=None):
         twitter_list = self.api.get_list(self.auth.username, listname)
-        return twitter_list.timeline(since_id=since_id)
+        if since_id:
+            return twitter_list.timeline(since_id=since_id)
+        return twitter_list.timeline()
 
     def run(self, args):
         parser = OptionParser()
