@@ -60,7 +60,7 @@ class App(object):
 
         except tweepy.TweepError, e:
             if self.debug:
-                print e.msg
+                print e
             print "Authorization error, check that your app's key and secret are valid"
             sys.exit(1)
 
@@ -102,21 +102,23 @@ class App(object):
             return 0
 
         if options.account and options.list and options.keyword:
-            self.load_user(options.account.lower())
+            self.load_user(options.account)
             self.work(options.account, options.list, options.keyword)
             self.config.write()
         return 0
             
     def work(self, account, listname, keyword):
 
+        last_id = None
         try:
             last_id = self.config[account][listname]
         except KeyError, e:
             if e.args[0] == account:
                 self.config[account] = {}
-            last_id = None
 
         tweets = self.get_list_timeline(listname, last_id)
+        last_id = tweets[0].id
+
         retweets = []
         for tweet in tweets:
             if tweet.text.lower().find(keyword.lower()) != -1:
@@ -127,9 +129,8 @@ class App(object):
                 print tweet.text
                 continue
             tweepy.retweet(tweet.id)
-            time.sleep(60)
+            time.sleep(50)
         
-        last_id = tweets[0].id
         self.config[account][listname] = last_id
 
 
@@ -142,7 +143,7 @@ class App(object):
         # TODO: do this in a loop to avoid empty pin
         verify_pin = raw_input('Type the pin: ')
         self.auth.get_access_token(verify_pin)
-        username = self.auth.get_username().lower()
+        username = self.auth.get_username()
         # TODO: check if username exist and ask if it's ok to overwrite
         self.config[username] = {}
         self.config[username]['key'] = self.auth.access_token.key
